@@ -12,7 +12,7 @@
     <select id="mode">
       <option value="countdown" selected>Countdown (duration)</option>
       <option value="countto">Countdown to time</option>
-      <option value="countup" disabled>Count-up (soon)</option>
+      <option value="countup">Count-up (stopwatch)</option>
       <option value="clock" disabled>Live clock (soon)</option>
     </select>
   </section>
@@ -40,6 +40,14 @@
       <button id="start">Start</button>
       <button id="pause">Pause</button>
       <button id="reset">Reset</button>
+    </div>
+  </section>
+
+  <section class="block">
+    <label id="thresholdLabel">Warning threshold (turns text red)</label>
+    <div class="row">
+      <input id="threshold" type="number" min="0" max="86399" value="30" />
+      <span id="thresholdHint">sec left (0 = off)</span>
     </div>
   </section>
 

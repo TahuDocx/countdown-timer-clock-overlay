@@ -6,6 +6,9 @@ const targetBlock = $('targetBlock');
 const minutesEl = $('minutes');
 const secondsEl = $('seconds');
 const targetTimeEl = $('targetTime');
+const thresholdEl = $('threshold');
+const thresholdLabel = $('thresholdLabel');
+const thresholdHint = $('thresholdHint');
 const startBtn = $('start');
 const pauseBtn = $('pause');
 const resetBtn = $('reset');
@@ -19,15 +22,16 @@ const toggleBtn = $('toggle');
 const statusEl = $('status');
 
 // --- State ---
-let mode = 'countdown';      // 'countdown' | 'countto'
-let remainingMs = 0;         // used by countdown (duration)
-let targetEpoch = 0;         // used by countto (absolute wall-clock ms)
+let mode = 'countdown';      // 'countdown' | 'countto' | 'countup'
+let remainingMs = 0;         // countdown (duration), decremented
+let targetEpoch = 0;         // countto, absolute wall-clock ms
+let elapsedMs = 0;           // countup, incremented
 let running = false;
 let tickHandle = null;
 let lastTs = 0;
 let overlayVisible = false;
 
-// --- Helpers ---
+// --- Input helpers ---
 function setDurationFromInputs() {
   const m = Math.max(0, parseInt(minutesEl.value, 10) || 0);
   const s = Math.min(59, Math.max(0, parseInt(secondsEl.value, 10) || 0));
@@ -43,10 +47,20 @@ function computeTargetEpoch() {
   return t.getTime();
 }
 
-// Current remaining ms for the active mode.
-function currentRemaining() {
+function thresholdMs() {
+  return Math.max(0, parseInt(thresholdEl.value, 10) || 0) * 1000;
+}
+
+// Value currently shown (ms). Countdown/countto = time left; countup = time elapsed.
+function displayMs() {
   if (mode === 'countto') return targetEpoch - Date.now();
+  if (mode === 'countup') return elapsedMs;
   return remainingMs;
+}
+
+// Countdown/countto end at zero; countup never ends.
+function isFinished() {
+  return mode !== 'countup' && displayMs() <= 0;
 }
 
 function format(ms) {
@@ -60,9 +74,26 @@ function format(ms) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
+// Begin the grow 1s before the threshold so the 2s transition leads into it.
+const EMPHASIS_LEAD_MS = 1000;
+
+// Threshold crossed → emphasize (enlarge) the text.
+function emphasisFor(value) {
+  const thr = thresholdMs();
+  if (thr <= 0) return false;
+  if (mode === 'countup') {
+    // Overrun: start growing 1s before elapsed reaches the limit.
+    return value >= thr - EMPHASIS_LEAD_MS;
+  }
+  // Warning: start growing 1s before time left hits the threshold.
+  return value > 0 && value <= thr + EMPHASIS_LEAD_MS;
+}
+
 function pushUpdate() {
+  const value = displayMs();
   window.overlay.update({
-    text: format(currentRemaining()),
+    text: format(value),
+    emphasis: emphasisFor(value),
     fontSize: parseInt(fontEl.value, 10),
     x: parseInt(posXEl.value, 10),
     y: parseInt(posYEl.value, 10),
@@ -78,18 +109,19 @@ function setOverlayVisible(v) {
 
 // --- Engine ---
 function tick() {
-  if (mode === 'countdown') {
-    const now = performance.now();
-    remainingMs -= now - lastTs;
-    lastTs = now;
-  }
-  // countto recomputes from wall clock inside currentRemaining(), no decrement.
+  const now = performance.now();
+  const dt = now - lastTs;
+  lastTs = now;
 
-  if (currentRemaining() <= 0) {
+  if (mode === 'countdown') remainingMs -= dt;
+  else if (mode === 'countup') elapsedMs += dt;
+  // countto derives from wall clock; no accumulator.
+
+  if (isFinished()) {
     if (mode === 'countdown') remainingMs = 0;
     pushUpdate();
     stop();
-    setOverlayVisible(false); // auto-hide at zero (MVP)
+    setOverlayVisible(false); // auto-hide at zero (countdown/countto)
     statusEl.textContent = 'Finished — overlay hidden';
     return;
   }
@@ -101,10 +133,11 @@ function start() {
   if (mode === 'countdown') {
     if (remainingMs <= 0) setDurationFromInputs();
     if (remainingMs <= 0) return;
-  } else {
+  } else if (mode === 'countto') {
     targetEpoch = computeTargetEpoch();
     if (targetEpoch - Date.now() <= 0) return;
   }
+  // countup just resumes from current elapsedMs.
   running = true;
   lastTs = performance.now();
   tickHandle = setInterval(tick, 200);
@@ -122,27 +155,32 @@ function stop() {
 function pause() {
   if (!running) return;
   stop();
-  // countto can't truly pause (it's wall-clock anchored); treat as stop.
+  // countto is wall-clock anchored — pause is really a stop.
   statusEl.textContent = mode === 'countto' ? 'Stopped' : 'Paused';
 }
 
 function reset() {
   stop();
-  if (mode === 'countdown') {
-    setDurationFromInputs();
-  } else {
-    targetEpoch = computeTargetEpoch();
-  }
+  if (mode === 'countdown') setDurationFromInputs();
+  else if (mode === 'countto') targetEpoch = computeTargetEpoch();
+  else elapsedMs = 0;
   pushUpdate();
   statusEl.textContent = 'Reset';
 }
 
 function applyMode() {
   mode = modeEl.value;
-  const isCountto = mode === 'countto';
-  durationBlock.style.display = isCountto ? 'none' : '';
-  targetBlock.style.display = isCountto ? '' : 'none';
-  pauseBtn.textContent = isCountto ? 'Stop' : 'Pause';
+  durationBlock.style.display = mode === 'countdown' ? '' : 'none';
+  targetBlock.style.display = mode === 'countto' ? '' : 'none';
+  pauseBtn.textContent = mode === 'countto' ? 'Stop' : 'Pause';
+
+  if (mode === 'countup') {
+    thresholdLabel.textContent = 'Overrun limit (enlarges text)';
+    thresholdHint.textContent = 'sec elapsed (0 = off)';
+  } else {
+    thresholdLabel.textContent = 'Warning threshold (enlarges text)';
+    thresholdHint.textContent = 'sec left (0 = off)';
+  }
   reset();
 }
 
@@ -159,6 +197,8 @@ posYEl.addEventListener('input', () => { yVal.textContent = posYEl.value; pushUp
 minutesEl.addEventListener('change', () => { if (!running) reset(); });
 secondsEl.addEventListener('change', () => { if (!running) reset(); });
 targetTimeEl.addEventListener('change', () => { if (!running) reset(); });
+
+thresholdEl.addEventListener('input', pushUpdate);
 
 toggleBtn.addEventListener('click', () => setOverlayVisible(!overlayVisible));
 
