@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="control.css" />
+</head>
+<body>
+  <h1>Countdown Overlay</h1>
+
+  <section class="block">
+    <label>Mode</label>
+    <select id="mode">
+      <option value="countdown" selected>Countdown (duration)</option>
+      <option value="countup" disabled>Count-up (soon)</option>
+      <option value="clock" disabled>Live clock (soon)</option>
+      <option value="countto" disabled>Countdown to time (soon)</option>
+    </select>
+  </section>
+
+  <section class="block">
+    <label>Duration</label>
+    <div class="row">
+      <input id="minutes" type="number" min="0" max="999" value="5" />
+      <span>min</span>
+      <input id="seconds" type="number" min="0" max="59" value="0" />
+      <span>sec</span>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="row buttons">
+      <button id="start">Start</button>
+      <button id="pause">Pause</button>
+      <button id="reset">Reset</button>
+    </div>
+  </section>
+
+  <section class="block">
+    <label>Font size: <span id="fontVal">120</span> px</label>
+    <input id="fontSize" type="range" min="20" max="500" value="120" />
+  </section>
+
+  <section class="block">
+    <label>Horizontal: <span id="xVal">50</span>%</label>
+    <input id="posX" type="range" min="0" max="100" value="50" />
+    <label>Vertical: <span id="yVal">50</span>%</label>
+    <input id="posY" type="range" min="0" max="100" value="50" />
+  </section>
+
+  <section class="block">
+    <button id="toggle" class="wide">Show overlay</button>
+  </section>
+
+  <p id="status" class="status">Idle</p>
+
+  <script src="control.js"></script>
+</body>
+</html>

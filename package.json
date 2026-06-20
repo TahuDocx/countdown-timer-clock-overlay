@@ -1,0 +1,53 @@
+{
+  "name": "countdown-timer-overlay",
+  "version": "0.1.0",
+  "description": "Transparent countdown/timer/clock overlay for external display (sits over EasyWorship).",
+  "author": "TahuDocx",
+  "license": "MIT",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win",
+    "pack": "electron-builder --win --dir"
+  },
+  "devDependencies": {
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.yahuariel.countdownoverlay",
+    "productName": "CountdownOverlay",
+    "files": [
+      "main.js",
+      "preload-control.js",
+      "preload-output.js",
+      "control.html",
+      "control.css",
+      "control.js",
+      "output.html",
+      "output.css",
+      "output.js",
+      "assets/icon.ico"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Countdown Overlay"
+    },
+    "portable": {
+      "artifactName": "CountdownOverlay-portable-${version}.exe"
+    }
+  }
+}

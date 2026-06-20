@@ -1,0 +1,28 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  overflow: hidden;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: none;
+}
+
+.timer {
+  position: absolute;
+  /* x/y set via inline left/top from JS (percentages) */
+  transform: translate(-50%, -50%);
+  color: #ffffff;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  /* Outline + shadow so it reads over any background. */
+  text-shadow:
+    -2px -2px 0 #000, 2px -2px 0 #000,
+    -2px  2px 0 #000, 2px  2px 0 #000,
+     0    0   12px rgba(0, 0, 0, 0.8);
+  display: none;
+}
