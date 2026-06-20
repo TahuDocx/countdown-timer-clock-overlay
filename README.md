@@ -48,3 +48,6 @@ App icon is built from a [Tabler](https://tabler.io/icons) hourglass
 ## License
 
 [MIT](LICENSE) © TahuDocx
+
+Third-party components and their licenses are listed in
+[THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
