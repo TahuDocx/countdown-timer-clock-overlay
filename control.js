@@ -3,6 +3,7 @@ const $ = (id) => document.getElementById(id);
 const modeEl = $('mode');
 const durationBlock = $('durationBlock');
 const targetBlock = $('targetBlock');
+const thresholdBlock = $('thresholdBlock');
 const minutesEl = $('minutes');
 const secondsEl = $('seconds');
 const targetTimeEl = $('targetTime');
@@ -22,7 +23,7 @@ const toggleBtn = $('toggle');
 const statusEl = $('status');
 
 // --- State ---
-let mode = 'countdown';      // 'countdown' | 'countto' | 'countup'
+let mode = 'countdown';      // 'countdown' | 'countto' | 'countup' | 'clock'
 let remainingMs = 0;         // countdown (duration), decremented
 let targetEpoch = 0;         // countto, absolute wall-clock ms
 let elapsedMs = 0;           // countup, incremented
@@ -58,9 +59,9 @@ function displayMs() {
   return remainingMs;
 }
 
-// Countdown/countto end at zero; countup never ends.
+// Countdown/countto end at zero; countup and clock never end.
 function isFinished() {
-  return mode !== 'countup' && displayMs() <= 0;
+  return (mode === 'countdown' || mode === 'countto') && displayMs() <= 0;
 }
 
 function format(ms) {
@@ -72,6 +73,13 @@ function format(ms) {
     return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
   }
   return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+// Current wall-clock time as HH:MM:SS (24-hour).
+function formatClock() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, '0');
+  return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
 }
 
 // Begin the grow 1s before the threshold so the 2s transition leads into it.
@@ -91,9 +99,10 @@ function emphasisFor(value) {
 
 function pushUpdate() {
   const value = displayMs();
+  const isClock = mode === 'clock';
   window.overlay.update({
-    text: format(value),
-    emphasis: emphasisFor(value),
+    text: isClock ? formatClock() : format(value),
+    emphasis: isClock ? false : emphasisFor(value),
     fontSize: parseInt(fontEl.value, 10),
     x: parseInt(posXEl.value, 10),
     y: parseInt(posYEl.value, 10),
@@ -155,8 +164,8 @@ function stop() {
 function pause() {
   if (!running) return;
   stop();
-  // countto is wall-clock anchored — pause is really a stop.
-  statusEl.textContent = mode === 'countto' ? 'Stopped' : 'Paused';
+  // countto/clock are wall-clock driven — pause is really a stop.
+  statusEl.textContent = mode === 'countto' || mode === 'clock' ? 'Stopped' : 'Paused';
 }
 
 function reset() {
@@ -172,7 +181,9 @@ function applyMode() {
   mode = modeEl.value;
   durationBlock.style.display = mode === 'countdown' ? '' : 'none';
   targetBlock.style.display = mode === 'countto' ? '' : 'none';
-  pauseBtn.textContent = mode === 'countto' ? 'Stop' : 'Pause';
+  // Threshold/emphasis is meaningless for a live clock.
+  thresholdBlock.style.display = mode === 'clock' ? 'none' : '';
+  pauseBtn.textContent = mode === 'countto' || mode === 'clock' ? 'Stop' : 'Pause';
 
   if (mode === 'countup') {
     thresholdLabel.textContent = 'Overrun limit (enlarges text)';

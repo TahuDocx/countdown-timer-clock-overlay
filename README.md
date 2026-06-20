@@ -11,13 +11,14 @@ control window drives what shows, where, and how big.
 - **Countdown** from a set duration (min/sec) with Start / Pause / Reset
 - **Countdown to time** — counts down to the next occurrence of a wall-clock time (HH:MM)
 - **Count-up** stopwatch with an **overrun limit** — keeps counting past the limit, text enlarges
+- **Live clock** — current wall-clock time (HH:MM:SS)
 - **Warning threshold** — countdown text smoothly enlarges when time left drops to/below it
 - **Movable + resizable** timer text — horizontal/vertical position (%) and font size
 - **Click-through** overlay — mouse/keyboard pass to the app underneath
 - **Auto-hide** when a countdown reaches `0:00`
 
-Architected but not yet wired: live clock, monitor picker,
-font/outline controls, custom at-zero message.
+Not yet wired: monitor picker, font/outline/color controls,
+custom at-zero message.
 
 ## Develop
 
