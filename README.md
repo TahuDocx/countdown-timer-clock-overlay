@@ -9,12 +9,13 @@ control window drives what shows, where, and how big.
 
 - **Two windows** — control (primary display) + transparent output (secondary display, auto-selected)
 - **Countdown** from a set duration (min/sec) with Start / Pause / Reset
+- **Countdown to time** — counts down to the next occurrence of a wall-clock time (HH:MM)
 - **Movable + resizable** timer text — horizontal/vertical position (%) and font size
 - **Click-through** overlay — mouse/keyboard pass to the app underneath
 - **Auto-hide** when the countdown reaches `0:00`
 
-Architected but not yet wired: count-up, live clock, countdown-to-clock-time,
-monitor picker, color/font/outline controls, custom at-zero message.
+Architected but not yet wired: count-up, live clock, monitor picker,
+color/font/outline controls, custom at-zero message.
 
 ## Develop
 
