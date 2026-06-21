@@ -1,6 +1,12 @@
 const { app, BrowserWindow, ipcMain, screen } = require('electron');
 const path = require('path');
 
+// Prevent Chromium from throttling/suspending timers and renderers when the
+// windows are backgrounded or fully occluded (e.g. behind EasyWorship).
+app.commandLine.appendSwitch('disable-background-timer-throttling');
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
+
 let controlWin = null;
 let outputWin = null;
 
@@ -21,6 +27,8 @@ function createControlWindow() {
       preload: path.join(__dirname, 'preload-control.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      // Timer engine lives here; keep it ticking when minimized/occluded.
+      backgroundThrottling: false,
     },
   });
   controlWin.removeMenu();
@@ -52,6 +60,8 @@ function createOutputWindow() {
       preload: path.join(__dirname, 'preload-output.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      // Keep rendering when the presentation app covers this overlay.
+      backgroundThrottling: false,
     },
   });
 

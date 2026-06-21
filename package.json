@@ -1,6 +1,6 @@
 {
   "name": "countdown-timer-overlay",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Transparent countdown/timer/clock overlay for external display.",
   "author": "TahuDocx",
   "license": "MIT",
