@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, screen } = require('electron');
 const path = require('path');
+const fs = require('fs');
 
 // Prevent Chromium from throttling/suspending timers and renderers when the
 // windows are backgrounded or fully occluded (e.g. behind EasyWorship).
@@ -103,4 +104,28 @@ ipcMain.on('overlay:visible', (_evt, visible) => {
   if (outputWin && !outputWin.isDestroyed()) {
     outputWin.webContents.send('overlay:visible', visible);
   }
+});
+
+// --- Settings persistence ---
+const settingsFile = () => path.join(app.getPath('userData'), 'settings.json');
+let saveTimer = null;
+
+ipcMain.handle('settings:load', () => {
+  try {
+    return JSON.parse(fs.readFileSync(settingsFile(), 'utf8'));
+  } catch {
+    return null; // missing or corrupt -> use control defaults
+  }
+});
+
+ipcMain.on('settings:save', (_evt, data) => {
+  // Debounce: slider drags fire rapidly.
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    try {
+      fs.writeFileSync(settingsFile(), JSON.stringify(data, null, 2));
+    } catch {
+      /* ignore write errors (e.g. disk full); settings are non-critical */
+    }
+  }, 300);
 });

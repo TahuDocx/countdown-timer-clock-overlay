@@ -213,7 +213,53 @@ thresholdEl.addEventListener('input', pushUpdate);
 
 toggleBtn.addEventListener('click', () => setOverlayVisible(!overlayVisible));
 
+// --- Settings persistence ---
+const SETTINGS_FIELDS = [
+  modeEl, minutesEl, secondsEl, targetTimeEl, thresholdEl, fontEl, posXEl, posYEl,
+];
+
+function collectSettings() {
+  return {
+    mode: modeEl.value,
+    minutes: minutesEl.value,
+    seconds: secondsEl.value,
+    targetTime: targetTimeEl.value,
+    threshold: thresholdEl.value,
+    fontSize: fontEl.value,
+    posX: posXEl.value,
+    posY: posYEl.value,
+  };
+}
+
+function applySettings(s) {
+  if (!s) return;
+  if (s.mode) modeEl.value = s.mode;
+  if (s.minutes != null) minutesEl.value = s.minutes;
+  if (s.seconds != null) secondsEl.value = s.seconds;
+  if (s.targetTime) targetTimeEl.value = s.targetTime;
+  if (s.threshold != null) thresholdEl.value = s.threshold;
+  if (s.fontSize != null) { fontEl.value = s.fontSize; fontVal.textContent = s.fontSize; }
+  if (s.posX != null) { posXEl.value = s.posX; xVal.textContent = s.posX; }
+  if (s.posY != null) { posYEl.value = s.posY; yVal.textContent = s.posY; }
+}
+
+function persist() {
+  window.overlay.saveSettings(collectSettings());
+}
+
+// Save on any control change (input covers sliders, change covers selects/numbers).
+SETTINGS_FIELDS.forEach((el) => {
+  el.addEventListener('input', persist);
+  el.addEventListener('change', persist);
+});
+
 // --- Init ---
-applyMode();
-// Give the output window a moment to register its IPC listeners.
-setTimeout(pushUpdate, 300);
+async function init() {
+  const saved = await window.overlay.loadSettings();
+  applySettings(saved);
+  applyMode(); // reads inputs, toggles blocks, resets to the loaded config
+  // Give the output window a moment to register its IPC listeners.
+  setTimeout(pushUpdate, 300);
+}
+
+init();
