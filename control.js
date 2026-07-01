@@ -10,6 +10,11 @@ const targetTimeEl = $('targetTime');
 const thresholdEl = $('threshold');
 const thresholdLabel = $('thresholdLabel');
 const thresholdHint = $('thresholdHint');
+const endMessageBlock = $('endMessageBlock');
+const endMessageEl = $('endMessage');
+const autoHideEl = $('autoHide');
+const hideDelayEl = $('hideDelay');
+const hideDelayRow = $('hideDelayRow');
 const startBtn = $('start');
 const pauseBtn = $('pause');
 const resetBtn = $('reset');
@@ -31,6 +36,7 @@ let running = false;
 let tickHandle = null;
 let lastTs = 0;
 let overlayVisible = false;
+let hideTimer = null;        // pending auto-hide after the at-zero message
 
 // --- Input helpers ---
 function setDurationFromInputs() {
@@ -128,10 +134,36 @@ function tick() {
 
   if (isFinished()) {
     if (mode === 'countdown') remainingMs = 0;
-    pushUpdate();
     stop();
-    setOverlayVisible(false); // auto-hide at zero (countdown/countto)
-    statusEl.textContent = 'Finished — overlay hidden';
+    const msg = endMessageEl.value.trim();
+    if (msg) {
+      // Non-empty message: hold the overlay showing the custom text.
+      // Keep the enlarged size if threshold emphasis was active — don't shrink.
+      window.overlay.update({
+        text: msg,
+        emphasis: thresholdMs() > 0,
+        fontSize: parseInt(fontEl.value, 10),
+        x: parseInt(posXEl.value, 10),
+        y: parseInt(posYEl.value, 10),
+      });
+      if (autoHideEl.checked) {
+        const secs = Math.max(0, parseInt(hideDelayEl.value, 10) || 0);
+        statusEl.textContent = `Finished — showing "${msg}", hiding in ${secs}s`;
+        clearTimeout(hideTimer);
+        hideTimer = setTimeout(() => {
+          hideTimer = null;
+          setOverlayVisible(false);
+          statusEl.textContent = 'Finished — overlay hidden';
+        }, secs * 1000);
+      } else {
+        statusEl.textContent = `Finished — showing "${msg}"`;
+      }
+    } else {
+      // Empty message: fall back to auto-hide at zero.
+      pushUpdate();
+      setOverlayVisible(false);
+      statusEl.textContent = 'Finished — overlay hidden';
+    }
     return;
   }
   pushUpdate();
@@ -139,6 +171,7 @@ function tick() {
 
 function start() {
   if (running) return;
+  clearTimeout(hideTimer); hideTimer = null; // cancel any pending at-zero hide
   if (mode === 'countdown') {
     if (remainingMs <= 0) setDurationFromInputs();
     if (remainingMs <= 0) return;
@@ -170,6 +203,7 @@ function pause() {
 
 function reset() {
   stop();
+  clearTimeout(hideTimer); hideTimer = null; // cancel any pending at-zero hide
   if (mode === 'countdown') setDurationFromInputs();
   else if (mode === 'countto') targetEpoch = computeTargetEpoch();
   else elapsedMs = 0;
@@ -183,6 +217,8 @@ function applyMode() {
   targetBlock.style.display = mode === 'countto' ? '' : 'none';
   // Threshold/emphasis is meaningless for a live clock.
   thresholdBlock.style.display = mode === 'clock' ? 'none' : '';
+  // At-zero message only applies to modes that actually finish.
+  endMessageBlock.style.display = mode === 'countdown' || mode === 'countto' ? '' : 'none';
   pauseBtn.textContent = mode === 'countto' || mode === 'clock' ? 'Stop' : 'Pause';
 
   if (mode === 'countup') {
@@ -195,8 +231,14 @@ function applyMode() {
   reset();
 }
 
+// Delay input is only relevant when auto-hide is enabled.
+function updateHideDelayVisibility() {
+  hideDelayRow.style.display = autoHideEl.checked ? '' : 'none';
+}
+
 // --- Events ---
 modeEl.addEventListener('change', applyMode);
+autoHideEl.addEventListener('change', updateHideDelayVisibility);
 startBtn.addEventListener('click', start);
 pauseBtn.addEventListener('click', pause);
 resetBtn.addEventListener('click', reset);
@@ -215,7 +257,8 @@ toggleBtn.addEventListener('click', () => setOverlayVisible(!overlayVisible));
 
 // --- Settings persistence ---
 const SETTINGS_FIELDS = [
-  modeEl, minutesEl, secondsEl, targetTimeEl, thresholdEl, fontEl, posXEl, posYEl,
+  modeEl, minutesEl, secondsEl, targetTimeEl, thresholdEl, endMessageEl,
+  autoHideEl, hideDelayEl, fontEl, posXEl, posYEl,
 ];
 
 function collectSettings() {
@@ -225,6 +268,9 @@ function collectSettings() {
     seconds: secondsEl.value,
     targetTime: targetTimeEl.value,
     threshold: thresholdEl.value,
+    endMessage: endMessageEl.value,
+    autoHide: autoHideEl.checked,
+    hideDelay: hideDelayEl.value,
     fontSize: fontEl.value,
     posX: posXEl.value,
     posY: posYEl.value,
@@ -238,6 +284,9 @@ function applySettings(s) {
   if (s.seconds != null) secondsEl.value = s.seconds;
   if (s.targetTime) targetTimeEl.value = s.targetTime;
   if (s.threshold != null) thresholdEl.value = s.threshold;
+  if (s.endMessage != null) endMessageEl.value = s.endMessage;
+  if (s.autoHide != null) autoHideEl.checked = s.autoHide;
+  if (s.hideDelay != null) hideDelayEl.value = s.hideDelay;
   if (s.fontSize != null) { fontEl.value = s.fontSize; fontVal.textContent = s.fontSize; }
   if (s.posX != null) { posXEl.value = s.posX; xVal.textContent = s.posX; }
   if (s.posY != null) { posYEl.value = s.posY; yVal.textContent = s.posY; }
@@ -257,6 +306,7 @@ SETTINGS_FIELDS.forEach((el) => {
 async function init() {
   const saved = await window.overlay.loadSettings();
   applySettings(saved);
+  updateHideDelayVisibility();
   applyMode(); // reads inputs, toggles blocks, resets to the loaded config
   // Give the output window a moment to register its IPC listeners.
   setTimeout(pushUpdate, 300);

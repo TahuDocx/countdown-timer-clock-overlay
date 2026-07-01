@@ -44,10 +44,25 @@
   </section>
 
   <section class="block" id="thresholdBlock">
-    <label id="thresholdLabel">Warning threshold (turns text red)</label>
+    <label id="thresholdLabel">Warning threshold (enlarges text)</label>
     <div class="row">
       <input id="threshold" type="number" min="0" max="86399" value="30" />
       <span id="thresholdHint">sec left (0 = off)</span>
+    </div>
+  </section>
+
+  <section class="block" id="endMessageBlock">
+    <label>At-zero message</label>
+    <div class="row">
+      <input id="endMessage" type="text" maxlength="60" placeholder="(empty = hide overlay)" />
+    </div>
+    <div class="row">
+      <label><input id="autoHide" type="checkbox" /> Auto-hide after message</label>
+    </div>
+    <div class="row" id="hideDelayRow">
+      <span>Hide after</span>
+      <input id="hideDelay" type="number" min="0" max="3600" value="5" />
+      <span>sec</span>
     </div>
   </section>
 
