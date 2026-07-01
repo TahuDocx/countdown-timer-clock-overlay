@@ -255,6 +255,25 @@ thresholdEl.addEventListener('input', pushUpdate);
 
 toggleBtn.addEventListener('click', () => setOverlayVisible(!overlayVisible));
 
+// Keyboard shortcuts — ignored while typing in a field.
+document.addEventListener('keydown', (e) => {
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA')) return;
+  if (e.ctrlKey || e.altKey || e.metaKey) return;
+  switch (e.key) {
+    case ' ':
+      e.preventDefault();
+      if (running) pause(); else start();
+      break;
+    case 'r': case 'R':
+      reset();
+      break;
+    case 'h': case 'H':
+      setOverlayVisible(!overlayVisible);
+      break;
+  }
+});
+
 // --- Settings persistence ---
 const SETTINGS_FIELDS = [
   modeEl, minutesEl, secondsEl, targetTimeEl, thresholdEl, endMessageEl,
