@@ -74,6 +74,18 @@ function createOutputWindow() {
   outputWin.loadFile('output.html');
   // Use setBounds to cover the full display, then fullscreen.
   outputWin.setBounds(display.bounds);
+  // Restore the last known state after a (re)load so a recreated overlay
+  // picks up where the dead one left off.
+  outputWin.webContents.on('did-finish-load', () => {
+    if (lastFrame) outputWin.webContents.send('overlay:update', lastFrame);
+    outputWin.webContents.send('overlay:visible', lastVisible);
+  });
+  // Renderer crash doesn't fire 'closed'; drop the window so the next
+  // relay recreates it.
+  outputWin.webContents.on('render-process-gone', () => {
+    if (outputWin && !outputWin.isDestroyed()) outputWin.destroy();
+    outputWin = null;
+  });
   outputWin.on('closed', () => {
     outputWin = null;
   });
@@ -82,6 +94,14 @@ function createOutputWindow() {
 app.whenReady().then(() => {
   createControlWindow();
   createOutputWindow();
+
+  // Displays can come and go mid-show; move the overlay to the best one.
+  const repositionOutput = () => {
+    if (!outputWin || outputWin.isDestroyed()) return;
+    outputWin.setBounds(pickOutputDisplay().bounds);
+  };
+  screen.on('display-added', repositionOutput);
+  screen.on('display-removed', repositionOutput);
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -95,17 +115,25 @@ app.on('window-all-closed', () => {
   app.quit();
 });
 
-// Relay control -> output.
+// Relay control -> output. Last state is cached so a lost overlay window
+// (crash, unexpected close) is recreated and repopulated on the next relay.
+let lastFrame = null;
+let lastVisible = false;
+
+function ensureOutputWindow() {
+  if (!outputWin || outputWin.isDestroyed()) createOutputWindow();
+}
+
 ipcMain.on('overlay:update', (_evt, payload) => {
-  if (outputWin && !outputWin.isDestroyed()) {
-    outputWin.webContents.send('overlay:update', payload);
-  }
+  lastFrame = payload;
+  ensureOutputWindow();
+  outputWin.webContents.send('overlay:update', payload);
 });
 
 ipcMain.on('overlay:visible', (_evt, visible) => {
-  if (outputWin && !outputWin.isDestroyed()) {
-    outputWin.webContents.send('overlay:visible', visible);
-  }
+  lastVisible = visible;
+  ensureOutputWindow();
+  outputWin.webContents.send('overlay:visible', visible);
 });
 
 // --- Settings persistence ---
