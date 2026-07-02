@@ -259,6 +259,19 @@ enlargeEl.addEventListener('input', pushUpdate);
 posXEl.addEventListener('input', () => { xVal.textContent = posXEl.value; pushUpdate(); });
 posYEl.addEventListener('input', () => { yVal.textContent = posYEl.value; pushUpdate(); });
 
+// Position presets — jump X/Y to a corner/edge/center, then sync + save.
+function setPosition(x, y) {
+  posXEl.value = x; xVal.textContent = x;
+  posYEl.value = y; yVal.textContent = y;
+  pushUpdate();
+  persist();
+}
+document.querySelectorAll('.pos').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    setPosition(parseInt(btn.dataset.x, 10), parseInt(btn.dataset.y, 10));
+  });
+});
+
 minutesEl.addEventListener('change', () => { if (!running) reset(); });
 secondsEl.addEventListener('change', () => { if (!running) reset(); });
 targetTimeEl.addEventListener('change', () => { if (!running) reset(); });

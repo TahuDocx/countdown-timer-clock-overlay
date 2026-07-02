@@ -12,10 +12,13 @@ html, body {
 
 .timer {
   position: absolute;
-  /* x/y set via inline left/top from JS (percentages) */
-  transform: translate(-50%, -50%) scale(1);
+  /* x/y set via inline left/top from JS; the anchor is applied with the
+     individual `translate` property (JS), proportional to position. */
+  translate: -50% -50%;
+  scale: 1;
   transform-origin: center center;
-  transition: transform 2s cubic-bezier(0.22, 1, 0.36, 1);
+  /* Only the scale animates (the enlarge effect); position stays instant. */
+  transition: scale 2s cubic-bezier(0.22, 1, 0.36, 1);
   color: #ffffff;
   font-family: "Segoe UI", Arial, sans-serif;
   font-weight: 700;
@@ -32,6 +35,3 @@ html, body {
      0    0   12px rgba(0, 0, 0, 0.8);
 }
 
-.timer.emphasis {
-  transform: translate(-50%, -50%) scale(1.6);
-}
