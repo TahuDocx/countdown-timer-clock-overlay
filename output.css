@@ -32,6 +32,11 @@ html, body {
 /* Shown state — fades in via the opacity transition above. */
 .timer.shown { opacity: 1; }
 
+/* Reduced motion: keep the crossfade, drop the scale animation. */
+@media (prefers-reduced-motion: reduce) {
+  .timer { transition: opacity 0.4s ease; }
+}
+
 /* Outline + shadow so it reads over any background (toggle from control). */
 .timer.outline {
   text-shadow:

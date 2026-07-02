@@ -83,6 +83,9 @@ h1 { font-size: 18px; margin: 0 0 14px; }
   line-height: 1;
   white-space: nowrap;
 }
+@media (prefers-reduced-motion: reduce) {
+  .preview-timer { transition: none; }
+}
 .preview-timer.outline {
   text-shadow:
     -1px -1px 0 #000, 1px -1px 0 #000,
