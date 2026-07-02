@@ -17,15 +17,20 @@ html, body {
   translate: -50% -50%;
   scale: 1;
   transform-origin: center center;
-  /* Only the scale animates (the enlarge effect); position stays instant. */
-  transition: scale 2s cubic-bezier(0.22, 1, 0.36, 1);
+  /* Scale animates the enlarge effect; opacity animates show/hide fades;
+     position stays instant. */
+  transition: scale 2s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
   color: #ffffff;
+  opacity: 0;
   font-family: "Segoe UI", Arial, sans-serif;
   font-weight: 700;
   line-height: 1;
   white-space: nowrap;
-  display: none;
+  display: block;
 }
+
+/* Shown state — fades in via the opacity transition above. */
+.timer.shown { opacity: 1; }
 
 /* Outline + shadow so it reads over any background (toggle from control). */
 .timer.outline {

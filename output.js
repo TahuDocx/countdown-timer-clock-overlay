@@ -51,7 +51,7 @@ function render(state) {
     curScale = state.emphasis ? (state.emphasisScale || 1.6) : 1;
   }
   applyLayout();
-  el.style.display = visible ? 'block' : 'none';
+  el.classList.toggle('shown', visible);
 }
 
 window.overlay.onUpdate((state) => {
@@ -60,7 +60,7 @@ window.overlay.onUpdate((state) => {
 
 window.overlay.onVisible((v) => {
   visible = v;
-  el.style.display = visible ? 'block' : 'none';
+  el.classList.toggle('shown', visible);
   if (visible) clamp();
 });
 
