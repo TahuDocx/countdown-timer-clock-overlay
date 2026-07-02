@@ -10,6 +10,7 @@ const targetTimeEl = $('targetTime');
 const thresholdEl = $('threshold');
 const thresholdLabel = $('thresholdLabel');
 const thresholdHint = $('thresholdHint');
+const modeHint = $('modeHint');
 const endMessageBlock = $('endMessageBlock');
 const endMessageEl = $('endMessage');
 const autoHideEl = $('autoHide');
@@ -42,6 +43,7 @@ let remainingMs = 0;         // countdown (duration), decremented
 let targetEpoch = 0;         // countto, absolute wall-clock ms
 let elapsedMs = 0;           // countup, incremented
 let running = false;
+let paused = false;         // stopped mid-countdown with time on the clock
 let tickHandle = null;
 let lastTs = 0;
 let overlayVisible = false;
@@ -238,13 +240,19 @@ function start() {
   clearTimeout(hideTimer); hideTimer = null; // cancel any pending at-zero hide
   if (mode === 'countdown') {
     if (remainingMs <= 0) setDurationFromInputs();
-    if (remainingMs <= 0) return;
+    if (remainingMs <= 0) {
+      statusEl.textContent = 'Set a duration first';
+      return;
+    }
   } else if (mode === 'countto') {
     targetEpoch = computeTargetEpoch();
     if (targetEpoch - Date.now() <= 0) return;
   }
   // countup just resumes from current elapsedMs.
   running = true;
+  paused = false;
+  previewTimer.classList.remove('paused');
+  pauseBtn.disabled = false;
   lastTs = performance.now();
   tickHandle = setInterval(tick, 200);
   setOverlayVisible(true);
@@ -254,6 +262,7 @@ function start() {
 
 function stop() {
   running = false;
+  pauseBtn.disabled = true;
   if (tickHandle) clearInterval(tickHandle);
   tickHandle = null;
 }
@@ -261,12 +270,16 @@ function stop() {
 function pause() {
   if (!running) return;
   stop();
+  paused = true;
+  previewTimer.classList.add('paused');
   // countto/clock are wall-clock driven — pause is really a stop.
   statusEl.textContent = mode === 'countto' || mode === 'clock' ? 'Stopped' : 'Paused';
 }
 
 function reset() {
   stop();
+  paused = false;
+  previewTimer.classList.remove('paused');
   clearTimeout(hideTimer); hideTimer = null; // cancel any pending at-zero hide
   if (mode === 'countdown') setDurationFromInputs();
   else if (mode === 'countto') targetEpoch = computeTargetEpoch();
@@ -275,8 +288,16 @@ function reset() {
   statusEl.textContent = 'Reset';
 }
 
+const MODE_HINTS = {
+  countdown: 'Counts down from a set duration.',
+  countto: 'Counts down to a clock time — today, or tomorrow if already past.',
+  countup: 'Counts up from zero, like a stopwatch.',
+  clock: 'Shows the current time.',
+};
+
 function applyMode() {
   mode = modeEl.value;
+  modeHint.textContent = MODE_HINTS[mode];
   durationBlock.style.display = mode === 'countdown' ? '' : 'none';
   targetBlock.style.display = mode === 'countto' ? '' : 'none';
   // Threshold/emphasis is meaningless for a live clock.
@@ -286,23 +307,33 @@ function applyMode() {
   pauseBtn.textContent = mode === 'countto' || mode === 'clock' ? 'Stop' : 'Pause';
 
   if (mode === 'countup') {
-    thresholdLabel.textContent = 'Overrun limit (enlarges text)';
-    thresholdHint.textContent = 'sec elapsed (0 = off)';
+    thresholdLabel.textContent = 'Grow the text when over time';
+    thresholdHint.textContent = 'seconds elapsed (0 = off)';
   } else {
-    thresholdLabel.textContent = 'Warning threshold (enlarges text)';
-    thresholdHint.textContent = 'sec left (0 = off)';
+    thresholdLabel.textContent = 'Grow the text when time is low';
+    thresholdHint.textContent = 'seconds left (0 = off)';
   }
   reset();
 }
 
-// Delay input is only relevant when auto-hide is enabled.
-function updateHideDelayVisibility() {
-  hideDelayRow.style.display = autoHideEl.checked ? '' : 'none';
+// Delay input is only relevant when auto-hide is enabled; keep it visible
+// but disabled so the option stays discoverable.
+function updateHideDelayState() {
+  const off = !autoHideEl.checked;
+  hideDelayEl.disabled = off;
+  hideDelayRow.classList.toggle('off', off);
+}
+
+// Enlarge ratio is meaningless while the threshold is 0 (feature off).
+function updateEnlargeState() {
+  const off = thresholdMs() <= 0;
+  enlargeEl.disabled = off;
+  enlargeEl.closest('.row').classList.toggle('off', off);
 }
 
 // --- Events ---
 modeEl.addEventListener('change', applyMode);
-autoHideEl.addEventListener('change', updateHideDelayVisibility);
+autoHideEl.addEventListener('change', updateHideDelayState);
 startBtn.addEventListener('click', start);
 pauseBtn.addEventListener('click', pause);
 resetBtn.addEventListener('click', reset);
@@ -338,11 +369,24 @@ posButtons.forEach((btn) => {
   });
 });
 
-minutesEl.addEventListener('change', () => { if (!running) reset(); });
-secondsEl.addEventListener('change', () => { if (!running) reset(); });
-targetTimeEl.addEventListener('change', () => { if (!running) reset(); });
+// Editing the time while idle re-arms the timer. A paused countdown keeps
+// its remaining time; the new duration takes effect on Reset.
+function onDurationEdit() {
+  if (running) return;
+  if (paused && mode === 'countdown') {
+    statusEl.textContent = 'New duration applies on reset';
+    return;
+  }
+  reset();
+  statusEl.textContent = 'Duration updated';
+}
+minutesEl.addEventListener('change', onDurationEdit);
+secondsEl.addEventListener('change', onDurationEdit);
+targetTimeEl.addEventListener('change', () => {
+  if (!running) { reset(); statusEl.textContent = 'Target time updated'; }
+});
 
-thresholdEl.addEventListener('input', pushUpdate);
+thresholdEl.addEventListener('input', () => { updateEnlargeState(); pushUpdate(); });
 
 fontFamilyEl.addEventListener('change', pushUpdate);
 colorEl.addEventListener('input', pushUpdate);
@@ -430,7 +474,8 @@ async function init() {
   const saved = await window.overlay.loadSettings();
   applySettings(saved);
   updatePosButtons();
-  updateHideDelayVisibility();
+  updateHideDelayState();
+  updateEnlargeState();
   applyMode(); // reads inputs, toggles blocks, resets to the loaded config
   // Give the output window a moment to register its IPC listeners.
   setTimeout(pushUpdate, 300);

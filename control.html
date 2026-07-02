@@ -6,6 +6,7 @@
 </head>
 <body>
   <h1>Countdown Overlay</h1>
+  <p class="intro">Set a time and press Start &mdash; the timer appears on top of your screen.</p>
 
   <div class="layout">
     <div class="controls">
@@ -21,6 +22,7 @@
               <option value="countup">Count-up (stopwatch)</option>
               <option value="clock">Live clock</option>
             </select>
+            <p id="modeHint" class="hint">Counts down from a set duration.</p>
           </div>
 
           <div class="block" id="durationBlock">
@@ -37,16 +39,17 @@
             <label>Target time</label>
             <div class="row">
               <input id="targetTime" type="time" step="60" value="10:00" />
-              <span>(next occurrence)</span>
+              <span>today, or tomorrow if already past</span>
             </div>
           </div>
 
           <div class="block">
             <div class="row buttons">
-              <button id="start">Start</button>
-              <button id="pause">Pause</button>
+              <button id="start" class="primary">Start</button>
+              <button id="pause" disabled>Pause</button>
               <button id="reset">Reset</button>
             </div>
+            <p id="status" class="status" aria-live="polite">Idle</p>
           </div>
         </fieldset>
 
@@ -54,22 +57,22 @@
           <legend>Threshold &amp; message</legend>
 
           <div class="block">
-            <label id="thresholdLabel">Warning threshold (enlarges text)</label>
+            <label id="thresholdLabel">Grow the text when time is low</label>
             <div class="row">
               <input id="threshold" type="number" min="0" max="86399" value="30" />
-              <span id="thresholdHint">sec left (0 = off)</span>
+              <span id="thresholdHint">seconds left (0 = off)</span>
             </div>
             <div class="row">
-              <span>Enlarge ratio</span>
+              <span>Grow to</span>
               <input id="enlarge" type="number" min="1" max="5" step="0.1" value="1.6" />
-              <span>&times;</span>
+              <span>&times; size</span>
             </div>
           </div>
 
           <div class="block" id="endMessageBlock">
-            <label>At-zero message</label>
+            <label>When time is up, show</label>
             <div class="row">
-              <input id="endMessage" type="text" maxlength="60" placeholder="(empty = hide overlay)" />
+              <input id="endMessage" type="text" maxlength="60" placeholder="(leave empty to hide the overlay)" />
             </div>
             <div class="row">
               <label class="inline"><input id="autoHide" type="checkbox" /> Auto-hide after message</label>
@@ -139,24 +142,23 @@
       <fieldset class="group">
         <legend>Overlay</legend>
         <div class="block">
-          <button id="toggle" class="wide">Show overlay</button>
+          <button id="toggle" class="wide primary">Show overlay</button>
         </div>
-        <p id="status" class="status">Idle</p>
         <p class="hint"><kbd>Space</kbd> start/pause &middot; <kbd>R</kbd> reset &middot; <kbd>H</kbd> show/hide</p>
       </fieldset>
 
       <fieldset class="group">
         <legend>Position</legend>
         <div class="posgrid">
-          <button type="button" class="pos" data-x="5"  data-y="5"  title="Top left">&#8598;</button>
-          <button type="button" class="pos" data-x="50" data-y="5"  title="Top center">&#8593;</button>
-          <button type="button" class="pos" data-x="95" data-y="5"  title="Top right">&#8599;</button>
-          <button type="button" class="pos" data-x="5"  data-y="50" title="Center left">&#8592;</button>
-          <button type="button" class="pos" data-x="50" data-y="50" title="Center">&#9679;</button>
-          <button type="button" class="pos" data-x="95" data-y="50" title="Center right">&#8594;</button>
-          <button type="button" class="pos" data-x="5"  data-y="95" title="Bottom left">&#8601;</button>
-          <button type="button" class="pos" data-x="50" data-y="95" title="Bottom center">&#8595;</button>
-          <button type="button" class="pos" data-x="95" data-y="95" title="Bottom right">&#8600;</button>
+          <button type="button" class="pos" data-x="5"  data-y="5"  title="Top left" aria-label="Top left">&#8598;</button>
+          <button type="button" class="pos" data-x="50" data-y="5"  title="Top center" aria-label="Top center">&#8593;</button>
+          <button type="button" class="pos" data-x="95" data-y="5"  title="Top right" aria-label="Top right">&#8599;</button>
+          <button type="button" class="pos" data-x="5"  data-y="50" title="Center left" aria-label="Center left">&#8592;</button>
+          <button type="button" class="pos" data-x="50" data-y="50" title="Center" aria-label="Center">&#9679;</button>
+          <button type="button" class="pos" data-x="95" data-y="50" title="Center right" aria-label="Center right">&#8594;</button>
+          <button type="button" class="pos" data-x="5"  data-y="95" title="Bottom left" aria-label="Bottom left">&#8601;</button>
+          <button type="button" class="pos" data-x="50" data-y="95" title="Bottom center" aria-label="Bottom center">&#8595;</button>
+          <button type="button" class="pos" data-x="95" data-y="95" title="Bottom right" aria-label="Bottom right">&#8600;</button>
         </div>
       </fieldset>
     </div>

@@ -1,14 +1,30 @@
+:root {
+  --bg: #1e1e1e;
+  --surface: #2b2b2b;
+  --border: #444;
+  --text: #e6e6e6;
+  --text-muted: #b8b8b8;
+  --text-faint: #9a9fa5;
+  --accent: #3a6df0;
+  --accent-hover: #2f5ed0;
+  --accent-active: #284fb0;
+  --accent-soft: #8ab4f8;
+  --danger: #c0392b;
+  --danger-hover: #a93226;
+}
+
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
   padding: 16px;
   font-family: "Segoe UI", Arial, sans-serif;
-  background: #1e1e1e;
-  color: #e6e6e6;
+  background: var(--bg);
+  color: var(--text);
 }
 
-h1 { font-size: 18px; margin: 0 0 14px; }
+h1 { font-size: 20px; margin: 0 0 4px; }
+.intro { font-size: 13px; color: var(--text-muted); margin: 0 0 14px; }
 
 .groups {
   display: grid;
@@ -29,7 +45,7 @@ h1 { font-size: 18px; margin: 0 0 14px; }
 }
 .group legend {
   font-size: 12px;
-  color: #8ab4f8;
+  color: var(--accent-soft);
   padding: 0 6px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -56,7 +72,7 @@ h1 { font-size: 18px; margin: 0 0 14px; }
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
-  border: 1px solid #444;
+  border: 1px solid var(--border);
   border-radius: 4px;
   overflow: hidden;
   background-color: #202020;
@@ -83,6 +99,7 @@ h1 { font-size: 18px; margin: 0 0 14px; }
   line-height: 1;
   white-space: nowrap;
 }
+.preview-timer.paused { opacity: 0.55; }
 @media (prefers-reduced-motion: reduce) {
   .preview-timer { transition: none; }
 }
@@ -102,43 +119,60 @@ h1 { font-size: 18px; margin: 0 0 14px; }
   padding: 8px 0;
   font-size: 15px;
   line-height: 1;
-  background: #2b2b2b;
-  border: 1px solid #444;
+  background: var(--surface);
+  border: 1px solid var(--border);
 }
-.posgrid .pos:hover { background: #3a6df0; }
-.posgrid .pos.active { background: #3a6df0; border-color: #6b93f5; }
+.posgrid .pos:hover { background: #3a3a3a; }
+.posgrid .pos.active { background: var(--accent); border-color: var(--accent-soft); color: #fff; }
 
-label { display: block; font-size: 13px; margin-bottom: 6px; color: #b8b8b8; }
+label { display: block; font-size: 13px; margin-bottom: 6px; color: var(--text-muted); }
 
 .row { display: flex; align-items: center; gap: 8px; }
+/* Feature off: input disabled, whole row dimmed but still discoverable. */
+.row.off { opacity: 0.55; }
 
 input[type="number"] {
-  width: 64px; padding: 6px; background: #2b2b2b; color: #fff;
-  border: 1px solid #444; border-radius: 4px;
+  width: 64px; padding: 6px; background: var(--surface); color: #fff;
+  border: 1px solid var(--border); border-radius: 4px;
 }
 
 select {
-  width: 100%; padding: 6px; background: #2b2b2b; color: #fff;
-  border: 1px solid #444; border-radius: 4px;
+  width: 100%; padding: 6px; background: var(--surface); color: #fff;
+  border: 1px solid var(--border); border-radius: 4px;
 }
 
 input[type="range"] { width: 100%; }
 
 button {
-  padding: 8px 14px; background: #3a6df0; color: #fff; border: none;
-  border-radius: 4px; cursor: pointer; font-size: 14px;
+  padding: 8px 14px; background: var(--surface); color: #e6e6e6;
+  border: 1px solid var(--border); border-radius: 4px; cursor: pointer; font-size: 14px;
 }
-button:hover { background: #2f5ed0; }
-button:active { background: #284fb0; }
+button:hover { background: #3a3a3a; }
+button:active { background: #232323; }
+button:disabled { opacity: 0.45; cursor: default; }
+button:disabled:hover { background: var(--surface); }
+
+/* Primary actions only: Start and the overlay toggle. */
+button.primary {
+  background: var(--accent); border-color: transparent; color: #fff; font-weight: 600;
+}
+button.primary:hover { background: var(--accent-hover); }
+button.primary:active { background: var(--accent-active); }
+
 .buttons button { flex: 1; }
 .wide { width: 100%; }
 
-#toggle.on { background: #c0392b; }
-#toggle.on:hover { background: #a93226; }
+button:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
+}
 
-.status { font-size: 12px; color: #888; margin: 8px 0 0; }
-.hint { font-size: 11px; color: #666; margin: 4px 0 0; }
+#toggle.on { background: var(--danger); }
+#toggle.on:hover { background: var(--danger-hover); }
+
+.status { font-size: 12px; color: var(--text-muted); margin: 8px 0 0; }
+.hint { font-size: 12px; color: var(--text-faint); margin: 4px 0 0; }
 .hint kbd {
-  background: #2b2b2b; border: 1px solid #444; border-radius: 3px;
-  padding: 0 4px; font-family: inherit; color: #b8b8b8;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 3px;
+  padding: 0 4px; font-family: inherit; color: #d0d0d0;
 }
