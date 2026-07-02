@@ -20,10 +20,10 @@ function pickOutputDisplay() {
 
 function createControlWindow() {
   controlWin = new BrowserWindow({
-    width: 640,
-    height: 660,
-    minWidth: 560,
-    minHeight: 520,
+    width: 900,
+    height: 680,
+    minWidth: 800,
+    minHeight: 560,
     title: 'Countdown Control',
     icon: path.join(__dirname, 'assets', 'icon.ico'),
     webPreferences: {

@@ -7,116 +7,146 @@
 <body>
   <h1>Countdown Overlay</h1>
 
-  <div class="groups">
-    <fieldset class="group">
-      <legend>Timer</legend>
+  <div class="layout">
+    <div class="controls">
+      <div class="groups">
+        <fieldset class="group">
+          <legend>Timer</legend>
 
-      <div class="block">
-        <label>Mode</label>
-        <select id="mode">
-          <option value="countdown" selected>Countdown (duration)</option>
-          <option value="countto">Countdown to time</option>
-          <option value="countup">Count-up (stopwatch)</option>
-          <option value="clock">Live clock</option>
-        </select>
-      </div>
-
-      <div class="block" id="durationBlock">
-        <label>Duration</label>
-        <div class="row">
-          <input id="minutes" type="number" min="0" max="999" value="5" />
-          <span>min</span>
-          <input id="seconds" type="number" min="0" max="59" value="0" />
-          <span>sec</span>
-        </div>
-      </div>
-
-      <div class="block" id="targetBlock" style="display:none">
-        <label>Target time</label>
-        <div class="row">
-          <input id="targetTime" type="time" step="60" value="10:00" />
-          <span>(next occurrence)</span>
-        </div>
-      </div>
-
-      <div class="block">
-        <div class="row buttons">
-          <button id="start">Start</button>
-          <button id="pause">Pause</button>
-          <button id="reset">Reset</button>
-        </div>
-      </div>
-    </fieldset>
-
-    <fieldset class="group" id="thresholdBlock">
-      <legend>Threshold &amp; message</legend>
-
-      <div class="block">
-        <label id="thresholdLabel">Warning threshold (enlarges text)</label>
-        <div class="row">
-          <input id="threshold" type="number" min="0" max="86399" value="30" />
-          <span id="thresholdHint">sec left (0 = off)</span>
-        </div>
-        <div class="row">
-          <span>Enlarge ratio</span>
-          <input id="enlarge" type="number" min="1" max="5" step="0.1" value="1.6" />
-          <span>&times;</span>
-        </div>
-      </div>
-
-      <div class="block" id="endMessageBlock">
-        <label>At-zero message</label>
-        <div class="row">
-          <input id="endMessage" type="text" maxlength="60" placeholder="(empty = hide overlay)" />
-        </div>
-        <div class="row">
-          <label class="inline"><input id="autoHide" type="checkbox" /> Auto-hide after message</label>
-        </div>
-        <div class="row" id="hideDelayRow">
-          <span>Hide after</span>
-          <input id="hideDelay" type="number" min="0" max="3600" value="5" />
-          <span>sec</span>
-        </div>
-      </div>
-    </fieldset>
-
-    <fieldset class="group span2">
-      <legend>Display</legend>
-
-      <div class="grid2">
-        <div class="block">
-          <label>Font size</label>
-          <div class="row">
-            <input id="fontSize" type="number" min="10" max="1000" value="120" />
-            <span>px</span>
+          <div class="block">
+            <label>Mode</label>
+            <select id="mode">
+              <option value="countdown" selected>Countdown (duration)</option>
+              <option value="countto">Countdown to time</option>
+              <option value="countup">Count-up (stopwatch)</option>
+              <option value="clock">Live clock</option>
+            </select>
           </div>
-        </div>
 
+          <div class="block" id="durationBlock">
+            <label>Duration</label>
+            <div class="row">
+              <input id="minutes" type="number" min="0" max="999" value="5" />
+              <span>min</span>
+              <input id="seconds" type="number" min="0" max="59" value="0" />
+              <span>sec</span>
+            </div>
+          </div>
+
+          <div class="block" id="targetBlock" style="display:none">
+            <label>Target time</label>
+            <div class="row">
+              <input id="targetTime" type="time" step="60" value="10:00" />
+              <span>(next occurrence)</span>
+            </div>
+          </div>
+
+          <div class="block">
+            <div class="row buttons">
+              <button id="start">Start</button>
+              <button id="pause">Pause</button>
+              <button id="reset">Reset</button>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="group" id="thresholdBlock">
+          <legend>Threshold &amp; message</legend>
+
+          <div class="block">
+            <label id="thresholdLabel">Warning threshold (enlarges text)</label>
+            <div class="row">
+              <input id="threshold" type="number" min="0" max="86399" value="30" />
+              <span id="thresholdHint">sec left (0 = off)</span>
+            </div>
+            <div class="row">
+              <span>Enlarge ratio</span>
+              <input id="enlarge" type="number" min="1" max="5" step="0.1" value="1.6" />
+              <span>&times;</span>
+            </div>
+          </div>
+
+          <div class="block" id="endMessageBlock">
+            <label>At-zero message</label>
+            <div class="row">
+              <input id="endMessage" type="text" maxlength="60" placeholder="(empty = hide overlay)" />
+            </div>
+            <div class="row">
+              <label class="inline"><input id="autoHide" type="checkbox" /> Auto-hide after message</label>
+            </div>
+            <div class="row" id="hideDelayRow">
+              <span>Hide after</span>
+              <input id="hideDelay" type="number" min="0" max="3600" value="5" />
+              <span>sec</span>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="group span2">
+          <legend>Display</legend>
+
+          <div class="grid2">
+            <div class="block">
+              <label>Font size</label>
+              <div class="row">
+                <input id="fontSize" type="number" min="10" max="1000" value="120" />
+                <span>px</span>
+              </div>
+            </div>
+
+            <div class="block">
+              <label>Font family</label>
+              <select id="fontFamily">
+                <option value='"Segoe UI", Arial, sans-serif'>Segoe UI</option>
+                <option value="Arial, sans-serif">Arial</option>
+                <option value="Impact, sans-serif">Impact</option>
+                <option value="Verdana, sans-serif">Verdana</option>
+                <option value="Tahoma, sans-serif">Tahoma</option>
+                <option value="Georgia, serif">Georgia</option>
+                <option value='"Times New Roman", serif'>Times New Roman</option>
+                <option value='"Courier New", monospace'>Courier New</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="block">
+            <div class="row">
+              <label class="inline">Text color</label>
+              <input id="color" type="color" value="#ffffff" />
+              <label class="inline"><input id="outline" type="checkbox" checked /> Outline</label>
+            </div>
+          </div>
+
+          <div class="block">
+            <label>Horizontal: <span id="xVal">50</span>%</label>
+            <input id="posX" type="range" min="0" max="100" value="50" />
+            <label>Vertical: <span id="yVal">50</span>%</label>
+            <input id="posY" type="range" min="0" max="100" value="50" />
+          </div>
+        </fieldset>
+      </div>
+    </div>
+
+    <div class="side">
+      <fieldset class="group">
+        <legend>Preview</legend>
+        <div id="previewBox" class="preview">
+          <div id="previewTimer" class="preview-timer outline">5:00</div>
+        </div>
+        <p class="hint">Approximate placement &mdash; not a screen capture.</p>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend>Overlay</legend>
         <div class="block">
-          <label>Font family</label>
-          <select id="fontFamily">
-            <option value='"Segoe UI", Arial, sans-serif'>Segoe UI</option>
-            <option value="Arial, sans-serif">Arial</option>
-            <option value="Impact, sans-serif">Impact</option>
-            <option value="Verdana, sans-serif">Verdana</option>
-            <option value="Tahoma, sans-serif">Tahoma</option>
-            <option value="Georgia, serif">Georgia</option>
-            <option value='"Times New Roman", serif'>Times New Roman</option>
-            <option value='"Courier New", monospace'>Courier New</option>
-          </select>
+          <button id="toggle" class="wide">Show overlay</button>
         </div>
-      </div>
+        <p id="status" class="status">Idle</p>
+        <p class="hint"><kbd>Space</kbd> start/pause &middot; <kbd>R</kbd> reset &middot; <kbd>H</kbd> show/hide</p>
+      </fieldset>
 
-      <div class="block">
-        <div class="row">
-          <label class="inline">Text color</label>
-          <input id="color" type="color" value="#ffffff" />
-          <label class="inline"><input id="outline" type="checkbox" checked /> Outline</label>
-        </div>
-      </div>
-
-      <div class="block">
-        <label>Position presets</label>
+      <fieldset class="group">
+        <legend>Position</legend>
         <div class="posgrid">
           <button type="button" class="pos" data-x="5"  data-y="5"  title="Top left">&#8598;</button>
           <button type="button" class="pos" data-x="50" data-y="5"  title="Top center">&#8593;</button>
@@ -128,24 +158,8 @@
           <button type="button" class="pos" data-x="50" data-y="95" title="Bottom center">&#8595;</button>
           <button type="button" class="pos" data-x="95" data-y="95" title="Bottom right">&#8600;</button>
         </div>
-      </div>
-
-      <div class="block">
-        <label>Horizontal: <span id="xVal">50</span>%</label>
-        <input id="posX" type="range" min="0" max="100" value="50" />
-        <label>Vertical: <span id="yVal">50</span>%</label>
-        <input id="posY" type="range" min="0" max="100" value="50" />
-      </div>
-    </fieldset>
-
-    <fieldset class="group span2">
-      <legend>Overlay</legend>
-      <div class="block">
-        <button id="toggle" class="wide">Show overlay</button>
-      </div>
-      <p id="status" class="status">Idle</p>
-      <p class="hint"><kbd>Space</kbd> start/pause &middot; <kbd>R</kbd> reset &middot; <kbd>H</kbd> show/hide</p>
-    </fieldset>
+      </fieldset>
+    </div>
   </div>
 
   <script src="control.js"></script>

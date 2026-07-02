@@ -29,6 +29,12 @@ const colorEl = $('color');
 const outlineEl = $('outline');
 const toggleBtn = $('toggle');
 const statusEl = $('status');
+const previewBox = $('previewBox');
+const previewTimer = $('previewTimer');
+
+// The output overlay fills the display; assume ~1080p tall so the preview
+// scales the font down proportionally to its own (much smaller) box.
+const ASSUMED_SCREEN_HEIGHT = 1080;
 
 // --- State ---
 let mode = 'countdown';      // 'countdown' | 'countto' | 'countup' | 'clock'
@@ -106,10 +112,12 @@ function emphasisFor(value) {
   return value > 0 && value <= thr + EMPHASIS_LEAD_MS;
 }
 
-function pushUpdate() {
+// One render frame: the exact state sent to the overlay and mirrored in the
+// preview. Callers may override fields (e.g. the at-zero message text).
+function buildFrame() {
   const value = displayMs();
   const isClock = mode === 'clock';
-  window.overlay.update({
+  return {
     text: isClock ? formatClock() : format(value),
     emphasis: isClock ? false : emphasisFor(value),
     emphasisScale: parseFloat(enlargeEl.value) || 1.6,
@@ -119,7 +127,58 @@ function pushUpdate() {
     outline: outlineEl.checked,
     x: parseInt(posXEl.value, 10),
     y: parseInt(posYEl.value, 10),
-  });
+  };
+}
+
+// Mirror a frame in the control-window preview (scaled-down, not a capture).
+let previewX = 50;
+let previewY = 50;
+
+// Same idea as output.js clamp(): after the proportional anchor, measure the
+// text box and nudge it back inside the preview with a pixel correction.
+function clampPreview() {
+  previewTimer.style.translate = `${-previewX}% ${-previewY}%`;
+  const box = previewBox.getBoundingClientRect();
+  const r = previewTimer.getBoundingClientRect();
+
+  let dx = 0;
+  if (r.width > box.width) dx = box.left - r.left;
+  else if (r.left < box.left) dx = box.left - r.left;
+  else if (r.right > box.right) dx = box.right - r.right;
+
+  let dy = 0;
+  if (r.height > box.height) dy = box.top - r.top;
+  else if (r.top < box.top) dy = box.top - r.top;
+  else if (r.bottom > box.bottom) dy = box.bottom - r.bottom;
+
+  if (dx || dy) {
+    previewTimer.style.translate = `calc(${-previewX}% + ${dx}px) calc(${-previewY}% + ${dy}px)`;
+  }
+}
+
+function renderPreview(frame) {
+  const scale = (previewBox.clientHeight || 1) / ASSUMED_SCREEN_HEIGHT;
+  previewTimer.textContent = frame.text;
+  previewTimer.style.fontSize = Math.max(1, frame.fontSize * scale) + 'px';
+  previewTimer.style.fontFamily = frame.fontFamily;
+  previewTimer.style.color = frame.color;
+  previewTimer.classList.toggle('outline', frame.outline);
+  previewTimer.style.left = frame.x + '%';
+  previewTimer.style.top = frame.y + '%';
+  previewTimer.style.scale = String(frame.emphasis ? frame.emphasisScale : 1);
+  previewX = frame.x;
+  previewY = frame.y;
+  clampPreview();
+}
+
+// Re-clamp when the enlarge animation settles or the window is resized.
+previewTimer.addEventListener('transitionend', clampPreview);
+window.addEventListener('resize', clampPreview);
+
+function pushUpdate() {
+  const frame = buildFrame();
+  window.overlay.update(frame);
+  renderPreview(frame);
 }
 
 function setOverlayVisible(v) {
@@ -146,17 +205,11 @@ function tick() {
     if (msg) {
       // Non-empty message: hold the overlay showing the custom text.
       // Keep the enlarged size if threshold emphasis was active — don't shrink.
-      window.overlay.update({
-        text: msg,
-        emphasis: thresholdMs() > 0,
-        emphasisScale: parseFloat(enlargeEl.value) || 1.6,
-        fontSize: parseInt(fontEl.value, 10),
-        fontFamily: fontFamilyEl.value,
-        color: colorEl.value,
-        outline: outlineEl.checked,
-        x: parseInt(posXEl.value, 10),
-        y: parseInt(posYEl.value, 10),
-      });
+      const frame = buildFrame();
+      frame.text = msg;
+      frame.emphasis = thresholdMs() > 0;
+      window.overlay.update(frame);
+      renderPreview(frame);
       if (autoHideEl.checked) {
         const secs = Math.max(0, parseInt(hideDelayEl.value, 10) || 0);
         statusEl.textContent = `Finished — showing "${msg}", hiding in ${secs}s`;
@@ -256,17 +309,30 @@ resetBtn.addEventListener('click', reset);
 
 fontEl.addEventListener('input', pushUpdate);
 enlargeEl.addEventListener('input', pushUpdate);
-posXEl.addEventListener('input', () => { xVal.textContent = posXEl.value; pushUpdate(); });
-posYEl.addEventListener('input', () => { yVal.textContent = posYEl.value; pushUpdate(); });
+posXEl.addEventListener('input', () => { xVal.textContent = posXEl.value; updatePosButtons(); pushUpdate(); });
+posYEl.addEventListener('input', () => { yVal.textContent = posYEl.value; updatePosButtons(); pushUpdate(); });
 
 // Position presets — jump X/Y to a corner/edge/center, then sync + save.
+const posButtons = document.querySelectorAll('.pos');
+
+// Highlight the preset matching the current X/Y (none if sliders are between).
+function updatePosButtons() {
+  posButtons.forEach((btn) => {
+    btn.classList.toggle(
+      'active',
+      btn.dataset.x === posXEl.value && btn.dataset.y === posYEl.value
+    );
+  });
+}
+
 function setPosition(x, y) {
   posXEl.value = x; xVal.textContent = x;
   posYEl.value = y; yVal.textContent = y;
+  updatePosButtons();
   pushUpdate();
   persist();
 }
-document.querySelectorAll('.pos').forEach((btn) => {
+posButtons.forEach((btn) => {
   btn.addEventListener('click', () => {
     setPosition(parseInt(btn.dataset.x, 10), parseInt(btn.dataset.y, 10));
   });
@@ -363,6 +429,7 @@ SETTINGS_FIELDS.forEach((el) => {
 async function init() {
   const saved = await window.overlay.loadSettings();
   applySettings(saved);
+  updatePosButtons();
   updateHideDelayVisibility();
   applyMode(); // reads inputs, toggles blocks, resets to the loaded config
   // Give the output window a moment to register its IPC listeners.
