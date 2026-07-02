@@ -49,6 +49,11 @@
       <input id="threshold" type="number" min="0" max="86399" value="30" />
       <span id="thresholdHint">sec left (0 = off)</span>
     </div>
+    <div class="row">
+      <span>Enlarge ratio</span>
+      <input id="enlarge" type="number" min="1" max="5" step="0.1" value="1.6" />
+      <span>×</span>
+    </div>
   </section>
 
   <section class="block" id="endMessageBlock">
@@ -67,8 +72,11 @@
   </section>
 
   <section class="block">
-    <label>Font size: <span id="fontVal">120</span> px</label>
-    <input id="fontSize" type="range" min="20" max="500" value="120" />
+    <label>Font size</label>
+    <div class="row">
+      <input id="fontSize" type="number" min="10" max="1000" value="120" />
+      <span>px</span>
+    </div>
   </section>
 
   <section class="block">
@@ -76,6 +84,28 @@
     <input id="posX" type="range" min="0" max="100" value="50" />
     <label>Vertical: <span id="yVal">50</span>%</label>
     <input id="posY" type="range" min="0" max="100" value="50" />
+  </section>
+
+  <section class="block">
+    <label>Font family</label>
+    <select id="fontFamily">
+      <option value='"Segoe UI", Arial, sans-serif'>Segoe UI</option>
+      <option value="Arial, sans-serif">Arial</option>
+      <option value="Impact, sans-serif">Impact</option>
+      <option value="Verdana, sans-serif">Verdana</option>
+      <option value="Tahoma, sans-serif">Tahoma</option>
+      <option value="Georgia, serif">Georgia</option>
+      <option value='"Times New Roman", serif'>Times New Roman</option>
+      <option value='"Courier New", monospace'>Courier New</option>
+    </select>
+  </section>
+
+  <section class="block">
+    <div class="row">
+      <label style="margin:0">Text color</label>
+      <input id="color" type="color" value="#ffffff" />
+      <label style="margin:0"><input id="outline" type="checkbox" checked /> Outline</label>
+    </div>
   </section>
 
   <section class="block">

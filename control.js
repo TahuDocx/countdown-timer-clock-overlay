@@ -19,11 +19,14 @@ const startBtn = $('start');
 const pauseBtn = $('pause');
 const resetBtn = $('reset');
 const fontEl = $('fontSize');
-const fontVal = $('fontVal');
+const enlargeEl = $('enlarge');
 const posXEl = $('posX');
 const posYEl = $('posY');
 const xVal = $('xVal');
 const yVal = $('yVal');
+const fontFamilyEl = $('fontFamily');
+const colorEl = $('color');
+const outlineEl = $('outline');
 const toggleBtn = $('toggle');
 const statusEl = $('status');
 
@@ -109,7 +112,11 @@ function pushUpdate() {
   window.overlay.update({
     text: isClock ? formatClock() : format(value),
     emphasis: isClock ? false : emphasisFor(value),
+    emphasisScale: parseFloat(enlargeEl.value) || 1.6,
     fontSize: parseInt(fontEl.value, 10),
+    fontFamily: fontFamilyEl.value,
+    color: colorEl.value,
+    outline: outlineEl.checked,
     x: parseInt(posXEl.value, 10),
     y: parseInt(posYEl.value, 10),
   });
@@ -142,7 +149,11 @@ function tick() {
       window.overlay.update({
         text: msg,
         emphasis: thresholdMs() > 0,
+        emphasisScale: parseFloat(enlargeEl.value) || 1.6,
         fontSize: parseInt(fontEl.value, 10),
+        fontFamily: fontFamilyEl.value,
+        color: colorEl.value,
+        outline: outlineEl.checked,
         x: parseInt(posXEl.value, 10),
         y: parseInt(posYEl.value, 10),
       });
@@ -243,7 +254,8 @@ startBtn.addEventListener('click', start);
 pauseBtn.addEventListener('click', pause);
 resetBtn.addEventListener('click', reset);
 
-fontEl.addEventListener('input', () => { fontVal.textContent = fontEl.value; pushUpdate(); });
+fontEl.addEventListener('input', pushUpdate);
+enlargeEl.addEventListener('input', pushUpdate);
 posXEl.addEventListener('input', () => { xVal.textContent = posXEl.value; pushUpdate(); });
 posYEl.addEventListener('input', () => { yVal.textContent = posYEl.value; pushUpdate(); });
 
@@ -252,6 +264,10 @@ secondsEl.addEventListener('change', () => { if (!running) reset(); });
 targetTimeEl.addEventListener('change', () => { if (!running) reset(); });
 
 thresholdEl.addEventListener('input', pushUpdate);
+
+fontFamilyEl.addEventListener('change', pushUpdate);
+colorEl.addEventListener('input', pushUpdate);
+outlineEl.addEventListener('change', pushUpdate);
 
 toggleBtn.addEventListener('click', () => setOverlayVisible(!overlayVisible));
 
@@ -276,8 +292,9 @@ document.addEventListener('keydown', (e) => {
 
 // --- Settings persistence ---
 const SETTINGS_FIELDS = [
-  modeEl, minutesEl, secondsEl, targetTimeEl, thresholdEl, endMessageEl,
+  modeEl, minutesEl, secondsEl, targetTimeEl, thresholdEl, enlargeEl, endMessageEl,
   autoHideEl, hideDelayEl, fontEl, posXEl, posYEl,
+  fontFamilyEl, colorEl, outlineEl,
 ];
 
 function collectSettings() {
@@ -287,9 +304,13 @@ function collectSettings() {
     seconds: secondsEl.value,
     targetTime: targetTimeEl.value,
     threshold: thresholdEl.value,
+    enlarge: enlargeEl.value,
     endMessage: endMessageEl.value,
     autoHide: autoHideEl.checked,
     hideDelay: hideDelayEl.value,
+    fontFamily: fontFamilyEl.value,
+    color: colorEl.value,
+    outline: outlineEl.checked,
     fontSize: fontEl.value,
     posX: posXEl.value,
     posY: posYEl.value,
@@ -306,7 +327,11 @@ function applySettings(s) {
   if (s.endMessage != null) endMessageEl.value = s.endMessage;
   if (s.autoHide != null) autoHideEl.checked = s.autoHide;
   if (s.hideDelay != null) hideDelayEl.value = s.hideDelay;
-  if (s.fontSize != null) { fontEl.value = s.fontSize; fontVal.textContent = s.fontSize; }
+  if (s.fontFamily) fontFamilyEl.value = s.fontFamily;
+  if (s.color) colorEl.value = s.color;
+  if (s.outline != null) outlineEl.checked = s.outline;
+  if (s.fontSize != null) fontEl.value = s.fontSize;
+  if (s.enlarge != null) enlargeEl.value = s.enlarge;
   if (s.posX != null) { posXEl.value = s.posX; xVal.textContent = s.posX; }
   if (s.posY != null) { posYEl.value = s.posY; yVal.textContent = s.posY; }
 }
