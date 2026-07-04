@@ -17,9 +17,16 @@ html, body {
   translate: -50% -50%;
   scale: 1;
   transform-origin: center center;
-  /* Scale animates the enlarge effect; opacity animates show/hide fades;
-     position stays instant. */
-  transition: scale 2s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
+  /* Scale animates the enlarge effect; opacity animates show/hide fades.
+     Position stays instant unless the "slide to preset" toggle sets a
+     non-zero --pos-dur (see .animate-pos). */
+  --pos-dur: 0s;
+  transition:
+    scale 2s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.4s ease,
+    left var(--pos-dur) cubic-bezier(0.22, 1, 0.36, 1),
+    top var(--pos-dur) cubic-bezier(0.22, 1, 0.36, 1),
+    translate var(--pos-dur) cubic-bezier(0.22, 1, 0.36, 1);
   color: #ffffff;
   opacity: 0;
   font-family: "Segoe UI", Arial, sans-serif;
@@ -31,6 +38,9 @@ html, body {
 
 /* Shown state — fades in via the opacity transition above. */
 .timer.shown { opacity: 1; }
+
+/* Slide to preset: animate position changes instead of jumping. */
+.timer.animate-pos { --pos-dur: 0.5s; }
 
 /* Reduced motion: keep the crossfade, drop the scale animation. */
 @media (prefers-reduced-motion: reduce) {

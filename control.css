@@ -92,7 +92,12 @@ h1 { font-size: 20px; margin: 0 0 4px; }
   translate: -50% -50%;
   scale: 1;
   transform-origin: center center;
-  transition: scale 2s cubic-bezier(0.22, 1, 0.36, 1);
+  --pos-dur: 0s;
+  transition:
+    scale 2s cubic-bezier(0.22, 1, 0.36, 1),
+    left var(--pos-dur) cubic-bezier(0.22, 1, 0.36, 1),
+    top var(--pos-dur) cubic-bezier(0.22, 1, 0.36, 1),
+    translate var(--pos-dur) cubic-bezier(0.22, 1, 0.36, 1);
   color: #fff;
   font-family: "Segoe UI", Arial, sans-serif;
   font-weight: 700;
@@ -100,6 +105,7 @@ h1 { font-size: 20px; margin: 0 0 4px; }
   white-space: nowrap;
 }
 .preview-timer.paused { opacity: 0.55; }
+.preview-timer.animate-pos { --pos-dur: 0.5s; }
 @media (prefers-reduced-motion: reduce) {
   .preview-timer { transition: none; }
 }

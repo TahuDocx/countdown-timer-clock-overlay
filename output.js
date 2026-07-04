@@ -1,5 +1,6 @@
 const el = document.getElementById('timer');
 let visible = false;
+let posAnimTimer = null;
 
 // Anchor proportional to position so the text hugs edges based on its own
 // size: x=0 aligns its left edge, x=100 its right edge, x=50 centers it.
@@ -45,6 +46,14 @@ function render(state) {
   if (typeof state.fontFamily === 'string') el.style.fontFamily = state.fontFamily;
   if (typeof state.color === 'string') el.style.color = state.color;
   if (typeof state.outline === 'boolean') el.classList.toggle('outline', state.outline);
+  // One-shot slide: keep the class through the 0.5s transition, then drop it.
+  // Toggling it off on the next frame would snap mid-slide (ticks arrive
+  // every 200ms with animatePos=false).
+  if (state.animatePos) {
+    el.classList.add('animate-pos');
+    clearTimeout(posAnimTimer);
+    posAnimTimer = setTimeout(() => el.classList.remove('animate-pos'), 600);
+  }
   if (typeof state.x === 'number') curX = state.x;
   if (typeof state.y === 'number') curY = state.y;
   if (typeof state.emphasis === 'boolean') {

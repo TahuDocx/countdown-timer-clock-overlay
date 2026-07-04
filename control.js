@@ -28,6 +28,7 @@ const yVal = $('yVal');
 const fontFamilyEl = $('fontFamily');
 const colorEl = $('color');
 const outlineEl = $('outline');
+const posAnimateEl = $('posAnimate');
 const toggleBtn = $('toggle');
 const statusEl = $('status');
 const previewBox = $('previewBox');
@@ -158,8 +159,17 @@ function clampPreview() {
   }
 }
 
+let previewPosAnimTimer = null;
+
 function renderPreview(frame) {
   const scale = (previewBox.clientHeight || 1) / ASSUMED_SCREEN_HEIGHT;
+  // One-shot slide: hold the class through the 0.5s transition (ticks arrive
+  // with animatePos=false and would otherwise snap it mid-slide).
+  if (frame.animatePos) {
+    previewTimer.classList.add('animate-pos');
+    clearTimeout(previewPosAnimTimer);
+    previewPosAnimTimer = setTimeout(() => previewTimer.classList.remove('animate-pos'), 600);
+  }
   previewTimer.textContent = frame.text;
   previewTimer.style.fontSize = Math.max(1, frame.fontSize * scale) + 'px';
   previewTimer.style.fontFamily = frame.fontFamily;
@@ -177,8 +187,11 @@ function renderPreview(frame) {
 previewTimer.addEventListener('transitionend', clampPreview);
 window.addEventListener('resize', clampPreview);
 
-function pushUpdate() {
+// animatePos is a one-shot flag: only preset-button jumps set it, so the
+// overlay slides to a preset while slider drags and ticks stay instant.
+function pushUpdate(opts) {
   const frame = buildFrame();
+  frame.animatePos = !!(opts && opts.animatePos);
   window.overlay.update(frame);
   renderPreview(frame);
 }
@@ -360,7 +373,7 @@ function setPosition(x, y) {
   posXEl.value = x; xVal.textContent = x;
   posYEl.value = y; yVal.textContent = y;
   updatePosButtons();
-  pushUpdate();
+  pushUpdate({ animatePos: posAnimateEl.checked });
   persist();
 }
 posButtons.forEach((btn) => {
@@ -417,7 +430,7 @@ document.addEventListener('keydown', (e) => {
 const SETTINGS_FIELDS = [
   modeEl, minutesEl, secondsEl, targetTimeEl, thresholdEl, enlargeEl, endMessageEl,
   autoHideEl, hideDelayEl, fontEl, posXEl, posYEl,
-  fontFamilyEl, colorEl, outlineEl,
+  fontFamilyEl, colorEl, outlineEl, posAnimateEl,
 ];
 
 function collectSettings() {
@@ -437,6 +450,7 @@ function collectSettings() {
     fontSize: fontEl.value,
     posX: posXEl.value,
     posY: posYEl.value,
+    posAnimate: posAnimateEl.checked,
   };
 }
 
@@ -457,6 +471,7 @@ function applySettings(s) {
   if (s.enlarge != null) enlargeEl.value = s.enlarge;
   if (s.posX != null) { posXEl.value = s.posX; xVal.textContent = s.posX; }
   if (s.posY != null) { posYEl.value = s.posY; yVal.textContent = s.posY; }
+  if (s.posAnimate != null) posAnimateEl.checked = s.posAnimate;
 }
 
 function persist() {
